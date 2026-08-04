@@ -1,10 +1,11 @@
+import { describe, beforeEach, afterEach, it, expect, jest } from '@jest/globals';
 import { init } from '../src/commands/init.js';
 
 describe('init command', () => {
-  let consoleLogSpy: jest.SpyInstance;
+  let consoleLogSpy: ReturnType<typeof jest.spyOn>;
 
   beforeEach(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
   });
 
   afterEach(() => {

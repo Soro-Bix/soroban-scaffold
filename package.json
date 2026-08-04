@@ -9,10 +9,16 @@
   "scripts": {
     "build": "tsc",
     "dev": "ts-node src/index.ts",
-    "test": "jest",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "start": "node dist/index.js"
   },
-  "keywords": ["soroban", "stellar", "cli", "scaffold", "smart-contracts"],
+  "keywords": [
+    "soroban",
+    "stellar",
+    "cli",
+    "scaffold",
+    "smart-contracts"
+  ],
   "author": "",
   "license": "MIT",
   "description": "Scaffold production-ready Soroban smart contract projects in one command",
