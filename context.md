@@ -27,6 +27,9 @@
 - init command fully implemented — creates real project from `basic/` template, resolves author from `--author` flag or `git config user.name`, shows an ora spinner and chalk-colored success/error output
 - End-to-end test: `sorokit init test-project` generates a working Soroban project (verified `Cargo.toml`, `.gitignore`, `README.md`, `src/lib.rs`, `src/test.rs` all present and rendered correctly)
 - Fixed `npm run dev` script — `ts-node` alone can't load ESM TS files under `type: module` + `NodeNext`; now uses `node --loader ts-node/esm`
+- Fixed CI: `ora@9.4.1` (pulled in transitively via `string-width@8.x`, which uses the Unicode-sets regex flag) requires Node ≥20 and now actually gets imported by `init.ts`, which broke the Node 18.x matrix job with a "Invalid regular expression flags" crash. Dropped 18.x from the CI matrix (now 20.x/22.x) and added `engines.node: ">=20"` to package.json
+- Fixed CI: `tests/init.test.ts` originally exercised `init()` against the hardcoded sibling `soroban-scaffold-templates` path, which doesn't exist in a CI checkout of this repo alone (ENOENT). `init()` now takes an optional `templateDir` override (production default unchanged); tests point it at a fixture under `tests/fixtures/template/`
+- CI green on both matrix legs: https://github.com/Soro-Bix/soroban-scaffold/actions/runs/30995585459
 
 ### What still needs doing
 - Make template path configurable (not hardcoded to `../soroban-scaffold-templates`)
