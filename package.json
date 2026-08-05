@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node src/index.ts",
+    "dev": "node --loader ts-node/esm src/index.ts",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "start": "node dist/index.js"
   },
@@ -24,6 +24,7 @@
   "description": "Scaffold production-ready Soroban smart contract projects in one command",
   "devDependencies": {
     "@types/figlet": "^1.7.0",
+    "@types/fs-extra": "^11.0.4",
     "@types/jest": "^30.0.0",
     "@types/node": "^26.1.2",
     "jest": "^30.4.2",
@@ -35,6 +36,8 @@
     "chalk": "^5.6.2",
     "commander": "^14.0.3",
     "figlet": "^1.11.4",
+    "fs-extra": "^11.4.0",
+    "handlebars": "^4.7.9",
     "ora": "^9.4.1"
   }
 }

@@ -15,7 +15,8 @@ program
 program
   .command('init <project-name>')
   .description('Create a new Soroban smart contract project')
-  .action(async (projectName: string) => {
+  .option('-a, --author <author>', 'Author name (defaults to git config user.name)')
+  .action(async (projectName: string, options: { author?: string }) => {
     console.log(
       chalk.cyan(
         figlet.textSync('Sorokit', { horizontalLayout: 'full' })
@@ -23,7 +24,12 @@ program
     );
     console.log(chalk.green('\nWelcome to Soroban Scaffold!'));
     console.log(chalk.blue(`Project name: ${projectName}`));
-    await init(projectName);
+
+    try {
+      await init(projectName, options.author);
+    } catch {
+      process.exitCode = 1;
+    }
   });
 
 program.parse();
