@@ -2,7 +2,11 @@ import { describe, beforeEach, afterEach, it, expect } from '@jest/globals';
 import fs from 'fs-extra';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { init } from '../src/commands/init.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const FIXTURE_TEMPLATE_DIR = path.join(__dirname, 'fixtures', 'template');
 
 describe('init command', () => {
   let tmpDir: string;
@@ -20,7 +24,7 @@ describe('init command', () => {
   });
 
   it('creates a project directory with rendered template files', async () => {
-    await init('my-project', 'Test Author');
+    await init('my-project', 'Test Author', FIXTURE_TEMPLATE_DIR);
 
     const projectDir = path.join(tmpDir, 'my-project');
     expect(await fs.pathExists(projectDir)).toBe(true);
@@ -30,7 +34,7 @@ describe('init command', () => {
     expect(cargoToml).toContain('authors = ["Test Author"]');
 
     const libRs = await fs.readFile(path.join(projectDir, 'src', 'lib.rs'), 'utf-8');
-    expect(libRs).toContain('pub struct CounterContract');
+    expect(libRs).toContain('pub struct my-projectContract');
 
     expect(await fs.pathExists(path.join(projectDir, '.gitignore'))).toBe(true);
   });
@@ -38,8 +42,8 @@ describe('init command', () => {
   it('throws a clear error when the project directory already exists', async () => {
     await fs.ensureDir(path.join(tmpDir, 'existing-project'));
 
-    await expect(init('existing-project', 'Test Author')).rejects.toThrow(
-      /already exists/
-    );
+    await expect(
+      init('existing-project', 'Test Author', FIXTURE_TEMPLATE_DIR)
+    ).rejects.toThrow(/already exists/);
   });
 });

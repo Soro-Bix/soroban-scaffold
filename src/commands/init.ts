@@ -24,13 +24,18 @@ function resolveAuthor(authorOption?: string): string {
   return 'Unknown';
 }
 
-export async function init(projectName: string, authorOption?: string): Promise<void> {
+// TODO: make configurable (--template flag) once token/ and escrow/ are populated
+const DEFAULT_TEMPLATE_DIR = path.join(
+  __dirname,
+  '../../../soroban-scaffold-templates/templates/basic'
+);
+
+export async function init(
+  projectName: string,
+  authorOption?: string,
+  templateDir: string = DEFAULT_TEMPLATE_DIR
+): Promise<void> {
   const author = resolveAuthor(authorOption);
-  // TODO: make configurable (--template flag) once token/ and escrow/ are populated
-  const templateDir = path.join(
-    __dirname,
-    '../../../soroban-scaffold-templates/templates/basic'
-  );
 
   const spinner = ora('Scaffolding your Soroban project...').start();
 
