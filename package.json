@@ -6,6 +6,9 @@
   "bin": {
     "sorokit": "./dist/index.js"
   },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "node --loader ts-node/esm src/index.ts",
