@@ -1,5 +1,5 @@
 {
-  "name": "@soro-kiit/scaffold",
+  "name": "@soro-bix/scaffold",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",

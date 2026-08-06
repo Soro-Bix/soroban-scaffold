@@ -17,7 +17,7 @@ Soroban Scaffold CLI (`sorokit`) is a command-line tool that bootstraps complete
 _Planned — not yet published to npm_
 
 ```bash
-npm install -g @soro-kiit/scaffold
+npm install -g @soro-bix/scaffold
 ```
 
 ## Usage
