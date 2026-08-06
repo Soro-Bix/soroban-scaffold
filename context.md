@@ -36,3 +36,18 @@
 - Implement template selection (`--template` flag to choose basic/token/escrow)
 - Populate token/ and escrow/ templates properly
 - Publish to npm as `@soro-bix/scaffold`
+
+## Session 3 — 2026-08-06
+
+### What was fixed
+- Renamed npm package scope `@soro-kiit/scaffold` → `@soro-bix/scaffold` to match the actual GitHub org (`Soro-Bix`); updated README install instructions and regenerated `package-lock.json`
+- Confirmed and fixed a live bug affecting real users: a freshly `sorokit init`-generated project's `cargo test` failed out of the box with a `ChaCha20Rng`/`ed25519_dalek::rand_core::CryptoRng` trait-bound error, because the generated `Cargo.toml` was unpinned and shipped no `Cargo.lock` — a fresh dependency resolve pulls in `ed25519-dalek` 3.0.0 via `soroban-env-host`'s `testutils` feature, which conflicts with an older `ed25519-dalek`/`rand_core` elsewhere in the graph
+- No code changes were needed in this repo — the fix is entirely on the templates side (`soroban-scaffold-templates`): each template now ships a pre-generated, verified `Cargo.lock.template` that `copyTemplate` already renders and copies like any other template file (no CLI changes required), and `.gitignore.template` no longer excludes `Cargo.lock`
+- Verified end-to-end: `sorokit init fixed-test-project` → `cargo test` passes (5/5) with zero manual `cargo update`/intervention
+
+### What still needs doing
+- Make template path configurable (not hardcoded to `../soroban-scaffold-templates`)
+- Implement template selection (`--template` flag to choose basic/token/escrow)
+- Populate token/ and escrow/ templates properly (contract logic — Cargo.lock/tests are now fixed)
+- Publish to npm as `@soro-bix/scaffold`
+- Cargo.lock.template pins `soroban-sdk` at whatever was latest when generated (22.0.11 as of this session) — will need periodic regeneration as the SDK evolves
