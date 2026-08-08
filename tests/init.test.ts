@@ -15,8 +15,8 @@ describe('init command', () => {
 
   beforeEach(async () => {
     originalCwd = process.cwd();
-    originalTemplatesDirEnv = process.env.SOROKIT_TEMPLATES_DIR;
-    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'sorokit-test-'));
+    originalTemplatesDirEnv = process.env.SOROBIX_TEMPLATES_DIR;
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'sorobix-test-'));
     process.chdir(tmpDir);
   });
 
@@ -24,9 +24,9 @@ describe('init command', () => {
     process.chdir(originalCwd);
     await fs.remove(tmpDir);
     if (originalTemplatesDirEnv === undefined) {
-      delete process.env.SOROKIT_TEMPLATES_DIR;
+      delete process.env.SOROBIX_TEMPLATES_DIR;
     } else {
-      process.env.SOROKIT_TEMPLATES_DIR = originalTemplatesDirEnv;
+      process.env.SOROBIX_TEMPLATES_DIR = originalTemplatesDirEnv;
     }
   });
 
@@ -78,8 +78,8 @@ describe('init command', () => {
     ).rejects.toThrow(/already exists/);
   });
 
-  it('honors SOROKIT_TEMPLATES_DIR to override the default templates path', async () => {
-    process.env.SOROKIT_TEMPLATES_DIR = FIXTURE_TEMPLATES_DIR;
+  it('honors SOROBIX_TEMPLATES_DIR to override the default templates path', async () => {
+    process.env.SOROBIX_TEMPLATES_DIR = FIXTURE_TEMPLATES_DIR;
 
     await init('env-project', 'Test Author', 'basic');
 

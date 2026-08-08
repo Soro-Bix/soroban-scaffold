@@ -125,7 +125,7 @@ soroban-scaffold/
 ├── src/
 │   ├── index.ts           # CLI entry point, commander setup
 │   └── commands/
-│       └── init.ts        # `sorokit init` command implementation
+│       └── init.ts        # `sorobix init` command implementation
 ├── jest.config.ts         # Jest configuration
 ├── tsconfig.json          # TypeScript configuration
 ├── package.json

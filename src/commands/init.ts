@@ -21,7 +21,7 @@ const DEFAULT_TEMPLATES_DIR = path.join(
 );
 
 function resolveTemplatesDir(): string {
-  const override = process.env.SOROKIT_TEMPLATES_DIR;
+  const override = process.env.SOROBIX_TEMPLATES_DIR;
   return override && override.trim() ? override.trim() : DEFAULT_TEMPLATES_DIR;
 }
 
@@ -62,7 +62,7 @@ export async function init(
     if (!(await fs.pathExists(templateDir))) {
       throw new Error(
         `Template "${template}" not found at ${templateDir}. ` +
-          'Set SOROKIT_TEMPLATES_DIR to point at a directory containing basic/, token/, and escrow/ subdirectories.'
+          'Set SOROBIX_TEMPLATES_DIR to point at a directory containing basic/, token/, and escrow/ subdirectories.'
       );
     }
 

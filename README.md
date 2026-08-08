@@ -4,7 +4,7 @@ Scaffold production-ready Soroban smart contract projects in one command — lik
 
 ## What it does
 
-Soroban Scaffold CLI (`sorokit`) is a command-line tool that bootstraps complete, production-ready Soroban smart contract projects with a single command. It sets up:
+Soroban Scaffold CLI (`sorobix`) is a command-line tool that bootstraps complete, production-ready Soroban smart contract projects with a single command. It sets up:
 
 - Proper Rust/Cargo workspace structure with Soroban SDK 22.x
 - Choice of contract templates (basic counter, token, escrow, and more)
@@ -24,11 +24,11 @@ npm install -g @soro-bix/scaffold
 
 ```bash
 # Create a new basic counter contract project
-sorokit init my-contract
+sorobix init my-contract
 
 # See available options
-sorokit --help
-sorokit init --help
+sorobix --help
+sorobix init --help
 ```
 
 ## Tech Stack

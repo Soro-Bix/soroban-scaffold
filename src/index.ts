@@ -8,7 +8,7 @@ import { init, VALID_TEMPLATES } from './commands/init.js';
 const program = new Command();
 
 program
-  .name('sorokit')
+  .name('sorobix')
   .description('Scaffold production-ready Soroban smart contract projects in one command')
   .version('0.1.0');
 
@@ -24,7 +24,7 @@ program
   .action(async (projectName: string, options: { author?: string; template: string }) => {
     console.log(
       chalk.cyan(
-        figlet.textSync('Sorokit', { horizontalLayout: 'full' })
+        figlet.textSync('Sorobix', { horizontalLayout: 'full' })
       )
     );
     console.log(chalk.green('\nWelcome to Soroban Scaffold!'));
