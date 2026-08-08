@@ -33,7 +33,7 @@ cargo test --locked
 
 | Template | Description | Tests |
 |---|---|---|
-| `basic` | Counter contract — ideal for learning Soroban | 5 |
+| `basic` | Counter contract — ideal for learning Soroban | 7 |
 | `token` | SEP-41 fungible token with mint/burn/transfer/approve | 9 |
 | `escrow` | Milestone-based escrow with dispute resolution | 7 |
 
