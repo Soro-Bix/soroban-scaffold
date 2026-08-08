@@ -1,45 +1,82 @@
-# Soroban Scaffold CLI
+# Sorobix — Soroban Scaffold CLI
 
-Scaffold production-ready Soroban smart contract projects in one command — like `create-react-app` but for Soroban/Stellar development.
+> Scaffold production-ready Soroban smart contracts in one command.
 
-## What it does
+Sorobix is a command-line tool that generates fully working, tested, CI-ready Soroban smart contract projects on Stellar — so you can start building your contract logic immediately instead of spending hours on boilerplate setup.
 
-Soroban Scaffold CLI (`sorobix`) is a command-line tool that bootstraps complete, production-ready Soroban smart contract projects with a single command. It sets up:
+## Why Sorobix?
 
-- Proper Rust/Cargo workspace structure with Soroban SDK 22.x
-- Choice of contract templates (basic counter, token, escrow, and more)
-- Full test suites following best practices
-- Pre-configured `.gitignore`, README, and development tooling
-- Optimized release profiles for WASM deployment
+Every Soroban developer today manually assembles the same boilerplate:
+- Workspace Cargo.toml with the right release profile
+- Dependency pinning to avoid the ed25519-dalek conflict that breaks fresh installs
+- GitHub Actions CI with the right wasm32 target
+- Test file with mock environment setup
+- README and CONTRIBUTING docs
 
-## Installation
+Sorobix eliminates all of that. One command, three template types, everything pre-configured and pre-tested.
 
-_Planned — not yet published to npm_
+## Quick Start
 
 ```bash
+# Install globally
 npm install -g @soro-bix/scaffold
+
+# Scaffold a new project
+sorobix init my-token --template token
+
+# Generated project works immediately
+cd my-token
+cargo test --locked
 ```
 
-## Usage
+## Templates
+
+| Template | Description | Tests |
+|---|---|---|
+| `basic` | Counter contract — ideal for learning Soroban | 5 |
+| `token` | SEP-41 fungible token with mint/burn/transfer/approve | 9 |
+| `escrow` | Milestone-based escrow with dispute resolution | 7 |
+
+## Commands
 
 ```bash
-# Create a new basic counter contract project
-sorobix init my-contract
-
-# See available options
+sorobix init <project-name> [--template basic|token|escrow]
+sorobix list
+sorobix --version
 sorobix --help
-sorobix init --help
 ```
+
+## Environment Variables
+
+| Variable | Description | Default |
+|---|---|---|
+| `SOROBIX_TEMPLATES_DIR` | Override the default template directory path | `../soroban-scaffold-templates/templates` |
+
+## Requirements
+
+- Node.js 20+
+- Rust + Stellar CLI (for building generated contracts)
+- Freighter wallet (for deploying to Stellar Testnet)
 
 ## Tech Stack
 
-- **Runtime**: Node.js 18+
-- **Language**: TypeScript 5.x
-- **CLI Framework**: Commander
-- **Terminal UI**: Chalk (colors), Ora (spinners), Figlet (ASCII banners)
-- **Testing**: Jest + ts-jest
-- **Build**: TypeScript compiler (tsc)
+- TypeScript + Commander (CLI framework)
+- Handlebars (template variable rendering)
+- Chalk + Ora (terminal UX)
+- Jest (test suite — 10 passing tests)
+- GitHub Actions CI (Node 20/22 matrix)
 
 ## Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup instructions, branch naming conventions, and commit guidelines.
+We welcome contributors of all experience levels. See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup instructions and contribution guidelines.
+
+This project participates in the [Drips Wave Stellar contributor program](https://drips.network/wave/stellar). Check the open issues for tasks you can pick up and earn points for.
+
+## Related
+
+- [soroban-scaffold-templates](https://github.com/Soro-Bix/soroban-scaffold-templates) — The contract templates this CLI generates from
+- [Stellar Soroban docs](https://developers.stellar.org/docs/smart-contracts)
+
+## License
+
+MIT
