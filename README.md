@@ -41,7 +41,6 @@ cargo test --locked
 
 ```bash
 sorobix init <project-name> [--template basic|token|escrow]
-sorobix list
 sorobix --version
 sorobix --help
 ```
