@@ -8,7 +8,7 @@ import { copyTemplate, createProjectDir } from '../utils/files.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export const VALID_TEMPLATES = ['basic', 'token', 'escrow'] as const;
+export const VALID_TEMPLATES = ['basic', 'token', 'escrow', 'nft', 'multisig', 'timelock', 'vesting'] as const;
 export type TemplateName = (typeof VALID_TEMPLATES)[number];
 
 function isValidTemplate(value: string): value is TemplateName {
@@ -42,6 +42,75 @@ function resolveAuthor(authorOption?: string): string {
   return 'Unknown';
 }
 
+const TEMPLATE_DESCRIPTIONS: Record<string, string> = {
+  basic: 'Minimal contract skeleton with basic structure and tests',
+  token: 'SEP-41 compliant fungible token with mint, transfer, approve',
+  escrow: 'Time-locked escrow with multi-milestone release',
+  nft: 'Non-fungible token with mint, transfer, and metadata',
+  multisig: 'Multi-signature wallet with threshold approvals',
+  timelock: 'Time-based token lock with beneficiary release',
+  vesting: 'Token vesting schedule with cliff and linear release',
+};
+
+export function listTemplates(): void {
+  const templatesDir = resolveTemplatesDir();
+  console.log(chalk.bold('Template          Description'));
+  console.log(chalk.bold('--------          -----------'));
+  
+  for (const name of VALID_TEMPLATES) {
+    const tmplPath = path.join(templatesDir, name);
+    const exists = fs.existsSync(tmplPath);
+    const status = exists ? chalk.green('✓') : chalk.red('✗');
+    const desc = TEMPLATE_DESCRIPTIONS[name] || 'No description available';
+    console.log(` ${status} ${chalk.cyan(name.padEnd(16))} ${desc}`);
+  }
+  console.log('');
+}
+
+export function upgradeProject(projectPath: string): void {
+  const absPath = path.resolve(projectPath);
+  if (!fs.existsSync(absPath)) {
+    console.error(chalk.red(`Project path not found: ${absPath}`));
+    return;
+  }
+
+  console.log(chalk.blue(`Project path: ${absPath}`));
+
+  // Check if this is a Sorobix-generated project
+  const cargoToml = path.join(absPath, 'Cargo.toml');
+  if (!fs.existsSync(cargoToml)) {
+    console.error(chalk.red('Not a valid Soroban project (Cargo.toml not found)'));
+    return;
+  }
+
+  const cargoContent = fs.readFileSync(cargoToml, 'utf-8');
+  const sorobanSdkMatch = cargoContent.match(/soroban-sdk\s*=\s*"([^"]+)"/);
+  const currentVersion = sorobanSdkMatch ? sorobanSdkMatch[1] : 'unknown';
+
+  console.log(chalk.blue(`Current soroban-sdk version: ${currentVersion}`));
+  console.log(chalk.blue(`Latest soroban-sdk version: 22.0.0`));
+
+  if (currentVersion === '22.0.0') {
+    console.log(chalk.green('✓ Project is already up to date!'));
+    return;
+  }
+
+  // Upgrade soroban-sdk version
+  const upgraded = cargoContent.replace(
+    /soroban-sdk\s*=\s*"[^"]+"/g,
+    'soroban-sdk = "22.0.0"'
+  );
+
+  if (upgraded !== cargoContent) {
+    fs.writeFileSync(cargoToml, upgraded);
+    console.log(chalk.green('✓ Upgraded soroban-sdk to 22.0.0'));
+  }
+
+  console.log(chalk.green('\nUpgrade complete! Run `cargo build` to verify.'));
+}
+
+const TEMPLATE_DESC: Record<string, string> = TEMPLATE_DESCRIPTIONS;
+
 export async function init(
   projectName: string,
   authorOption?: string,
@@ -58,25 +127,20 @@ export async function init(
       );
     }
 
-    const templateDir = path.join(templatesDir, template);
-    if (!(await fs.pathExists(templateDir))) {
-      throw new Error(
-        `Template "${template}" not found at ${templateDir}. ` +
-          'Set SOROBIX_TEMPLATES_DIR to point at a directory containing basic/, token/, and escrow/ subdirectories.'
-      );
-    }
+    const projectPath = createProjectDir(projectName);
+    await copyTemplate(template, projectPath, templatesDir, {
+      projectName,
+      author,
+    });
 
-    const destDir = createProjectDir(projectName);
-    await copyTemplate(templateDir, destDir, { projectName, author });
-
-    spinner.succeed(chalk.green(`Project "${projectName}" created successfully!`));
-    console.log(chalk.green('\nNext steps:'));
-    console.log(chalk.cyan(`  cd ${projectName}`));
-    console.log(chalk.cyan('  cargo build'));
-    console.log(chalk.cyan('  cargo test'));
-  } catch (error) {
-    spinner.fail(chalk.red('Failed to create project.'));
-    console.error(chalk.red(error instanceof Error ? error.message : String(error)));
-    throw error;
+    spinner.succeed(chalk.green(`Project created at ${projectPath}`));
+    console.log(chalk.blue('\nNext steps:'));
+    console.log(chalk.white(`  cd ${projectName}`));
+    console.log(chalk.white('  cargo build'));
+    console.log(chalk.white('  cargo test'));
+    console.log('');
+  } catch (err) {
+    spinner.fail(chalk.red(`Failed to create project: ${err}`));
+    throw err;
   }
 }
