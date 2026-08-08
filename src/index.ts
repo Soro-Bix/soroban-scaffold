@@ -3,7 +3,8 @@
 import { Command, Option } from 'commander';
 import chalk from 'chalk';
 import figlet from 'figlet';
-import { init, VALID_TEMPLATES } from './commands/init.js';
+import { init, VALID_TEMPLATES, listTemplates, upgradeProject } from './commands/init.js';
+import { interactiveInit } from './commands/interactive.js';
 
 const program = new Command();
 
@@ -13,15 +14,29 @@ program
   .version('0.1.0');
 
 program
-  .command('init <project-name>')
+  .command('init [project-name]')
   .description('Create a new Soroban smart contract project')
   .option('-a, --author <author>', 'Author name (defaults to git config user.name)')
+  .option('-i, --interactive', 'Use interactive template selector')
   .addOption(
     new Option('-t, --template <name>', 'Contract template to scaffold')
       .choices(VALID_TEMPLATES)
       .default('basic')
   )
-  .action(async (projectName: string, options: { author?: string; template: string }) => {
+  .action(async (projectName: string | undefined, options: { author?: string; template: string; interactive?: boolean }) => {
+    if (options.interactive) {
+      await interactiveInit(options.author);
+      return;
+    }
+
+    if (!projectName) {
+      console.error(chalk.red('Error: project name is required when not using --interactive'));
+      console.log(chalk.yellow('Usage: sorobix init <project-name> -t <template>'));
+      console.log(chalk.yellow('   or: sorobix init --interactive'));
+      process.exitCode = 1;
+      return;
+    }
+
     console.log(
       chalk.cyan(
         figlet.textSync('Sorobix', { horizontalLayout: 'full' })
@@ -35,6 +50,25 @@ program
     } catch {
       process.exitCode = 1;
     }
+  });
+
+program
+  .command('list')
+  .description('List available contract templates')
+  .action(() => {
+    console.log(chalk.cyan(figlet.textSync('Sorobix', { horizontalLayout: 'full' })));
+    console.log(chalk.green('\nAvailable templates:\n'));
+    listTemplates();
+  });
+
+program
+  .command('upgrade')
+  .description('Upgrade scaffolded project to latest template version')
+  .option('-p, --path <path>', 'Path to project root', '.')
+  .action((options: { path: string }) => {
+    console.log(chalk.cyan(figlet.textSync('Sorobix', { horizontalLayout: 'full' })));
+    console.log(chalk.green('\nUpgrading project templates...\n'));
+    upgradeProject(options.path);
   });
 
 program.parse();
