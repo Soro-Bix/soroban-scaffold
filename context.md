@@ -51,3 +51,25 @@
 - Populate token/ and escrow/ templates properly (contract logic — Cargo.lock/tests are now fixed)
 - Publish to npm as `@soro-bix/scaffold`
 - Cargo.lock.template pins `soroban-sdk` at whatever was latest when generated (22.0.11 as of this session) — will need periodic regeneration as the SDK evolves
+
+## Session 4 — 2026-08-08
+
+### What was built
+- `--template` flag added (`basic` default, `token`, `escrow`) via `commander`'s `Option.choices()` — invalid values are rejected by commander itself before `init()` even runs, printing `error: option '-t, --template <name>' argument 'X' is invalid. Allowed choices are basic, token, escrow.` and exiting 1
+- `init()` also validates the template name itself (defense in depth, and what makes the invalid-template path unit-testable without spawning a subprocess): throws a clear `Invalid template "X". Valid options are: basic, token, escrow` error, shown via the existing spinner-fail/`console.error` path
+- `SOROKIT_TEMPLATES_DIR` env var added — overrides the default template path (`../soroban-scaffold-templates/templates` relative to the CLI); `init()`'s template dir resolution is now `path.join(templatesDir, template)` instead of a single hardcoded `basic/` path
+- Added an explicit "template not found" check (clearer than a raw ENOENT) when the resolved `<templatesDir>/<template>` doesn't exist
+- Spinner message now shows the selected template: `Initializing token project: my-contract`
+- `src/utils/files.ts` needed no changes — `copyTemplate` already worked generically on any directory tree
+- Restructured `tests/fixtures/template/` → `tests/fixtures/templates/{basic,token,escrow}/` to mirror the real templates repo layout, each with a distinguishable marker in `lib.rs.template` so tests can assert the right template was picked
+- Kept using the existing `tests/init.test.ts` (not a new `__tests__/init.test.ts`) — that's where init-command tests already lived across two prior sessions; a second file at a different path would just fork the same coverage
+- 10/10 tests passing: 3 templates picked correctly, invalid template rejected, `SOROKIT_TEMPLATES_DIR` override honored, plus the pre-existing "already exists" case
+
+### End-to-end verified
+- Real CLI run for all three: `sorokit init X --template {basic,token,escrow}` against the actual `soroban-scaffold-templates` repo, then `cargo test --locked` on each generated project — **basic 5/5, token 9/9, escrow 7/7**, zero manual intervention
+
+### What still needs doing
+- npm publish as `@soro-bix/scaffold`
+- Interactive template selector (inquirer prompt when `--template` isn't specified) — currently just defaults silently to `basic`
+- GitHub issues for Drips Wave
+- Make template path configurable was the last remaining item from Session 2/3's list — now done via `SOROKIT_TEMPLATES_DIR`

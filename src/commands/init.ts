@@ -2,10 +2,28 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 import chalk from 'chalk';
+import fs from 'fs-extra';
 import ora from 'ora';
 import { copyTemplate, createProjectDir } from '../utils/files.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export const VALID_TEMPLATES = ['basic', 'token', 'escrow'] as const;
+export type TemplateName = (typeof VALID_TEMPLATES)[number];
+
+function isValidTemplate(value: string): value is TemplateName {
+  return (VALID_TEMPLATES as readonly string[]).includes(value);
+}
+
+const DEFAULT_TEMPLATES_DIR = path.join(
+  __dirname,
+  '../../../soroban-scaffold-templates/templates'
+);
+
+function resolveTemplatesDir(): string {
+  const override = process.env.SOROKIT_TEMPLATES_DIR;
+  return override && override.trim() ? override.trim() : DEFAULT_TEMPLATES_DIR;
+}
 
 function resolveAuthor(authorOption?: string): string {
   if (authorOption && authorOption.trim()) {
@@ -24,22 +42,30 @@ function resolveAuthor(authorOption?: string): string {
   return 'Unknown';
 }
 
-// TODO: make configurable (--template flag) once token/ and escrow/ are populated
-const DEFAULT_TEMPLATE_DIR = path.join(
-  __dirname,
-  '../../../soroban-scaffold-templates/templates/basic'
-);
-
 export async function init(
   projectName: string,
   authorOption?: string,
-  templateDir: string = DEFAULT_TEMPLATE_DIR
+  template: string = 'basic',
+  templatesDir: string = resolveTemplatesDir()
 ): Promise<void> {
   const author = resolveAuthor(authorOption);
-
-  const spinner = ora('Scaffolding your Soroban project...').start();
+  const spinner = ora(`Initializing ${template} project: ${projectName}`).start();
 
   try {
+    if (!isValidTemplate(template)) {
+      throw new Error(
+        `Invalid template "${template}". Valid options are: ${VALID_TEMPLATES.join(', ')}`
+      );
+    }
+
+    const templateDir = path.join(templatesDir, template);
+    if (!(await fs.pathExists(templateDir))) {
+      throw new Error(
+        `Template "${template}" not found at ${templateDir}. ` +
+          'Set SOROKIT_TEMPLATES_DIR to point at a directory containing basic/, token/, and escrow/ subdirectories.'
+      );
+    }
+
     const destDir = createProjectDir(projectName);
     await copyTemplate(templateDir, destDir, { projectName, author });
 

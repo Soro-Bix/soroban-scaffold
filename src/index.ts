@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import chalk from 'chalk';
 import figlet from 'figlet';
-import { init } from './commands/init.js';
+import { init, VALID_TEMPLATES } from './commands/init.js';
 
 const program = new Command();
 
@@ -16,7 +16,12 @@ program
   .command('init <project-name>')
   .description('Create a new Soroban smart contract project')
   .option('-a, --author <author>', 'Author name (defaults to git config user.name)')
-  .action(async (projectName: string, options: { author?: string }) => {
+  .addOption(
+    new Option('-t, --template <name>', 'Contract template to scaffold')
+      .choices(VALID_TEMPLATES)
+      .default('basic')
+  )
+  .action(async (projectName: string, options: { author?: string; template: string }) => {
     console.log(
       chalk.cyan(
         figlet.textSync('Sorokit', { horizontalLayout: 'full' })
@@ -26,7 +31,7 @@ program
     console.log(chalk.blue(`Project name: ${projectName}`));
 
     try {
-      await init(projectName, options.author);
+      await init(projectName, options.author, options.template);
     } catch {
       process.exitCode = 1;
     }
