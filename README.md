@@ -98,8 +98,22 @@ what the templates actually contain.
 - Handlebars (template variable rendering)
 - Chalk + Ora (terminal UX)
 - Inquirer (interactive prompts)
-- Jest (test suite — 35 passing tests)
+- Jest (35 unit tests, plus 3 integration tests that build real contracts)
 - GitHub Actions CI (Node 20/22 matrix)
+
+## Testing
+
+```bash
+npm test              # unit tests — fast, no Rust required
+npm run test:integration   # scaffolds each template and runs cargo test on it
+npm run test:all      # both
+```
+
+The integration suite runs the compiled CLI, generates a project from every
+template, and asserts that `cargo test --locked` passes inside each generated
+project — so a template that stops compiling fails the build. It skips
+automatically when Rust or the templates directory is unavailable, and runs in
+CI on merges to `main`.
 
 ## Contributing
 

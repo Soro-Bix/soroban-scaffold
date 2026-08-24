@@ -13,7 +13,9 @@
     "build": "tsc",
     "dev": "node --loader ts-node/esm src/index.ts",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test:integration": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.integration.config.js",
+    "test:all": "npm test && npm run test:integration"
   },
   "keywords": [
     "soroban",

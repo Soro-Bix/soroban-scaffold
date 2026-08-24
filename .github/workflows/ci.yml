@@ -28,3 +28,38 @@ jobs:
       - run: npm test
         env:
           NODE_OPTIONS: --experimental-vm-modules
+
+  # Compiles a real Rust project per template, so it is far slower than the
+  # unit run. Restricted to pushes on main to keep PR feedback fast.
+  integration:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out the templates repository
+        uses: actions/checkout@v4
+        with:
+          repository: Soro-Bix/soroban-scaffold-templates
+          path: soroban-scaffold-templates
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - uses: Swatinem/rust-cache@v2
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Run integration tests
+        run: npm run test:integration
+        env:
+          NODE_OPTIONS: --experimental-vm-modules
+          SOROBIX_TEMPLATES_DIR: ${{ github.workspace }}/soroban-scaffold-templates/templates
