@@ -71,6 +71,12 @@ const EXPECTATIONS: TemplateExpectation[] = [
     expectedTestCount: 7,
     libMarker: 'pub struct EscrowContract',
   },
+  {
+    template: 'nft',
+    expectedFiles: ['Cargo.toml', 'Cargo.lock', '.gitignore', 'README.md', 'src/lib.rs', 'src/test.rs'],
+    expectedTestCount: 13,
+    libMarker: 'pub struct NftContract',
+  },
 ];
 
 function parseTestTotal(cargoOutput: string): number {

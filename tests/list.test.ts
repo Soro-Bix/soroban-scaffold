@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { list } from '../src/commands/list.js';
-import { discoverTemplates } from '../src/utils/templates.js';
+import { discoverTemplates, VALID_TEMPLATES } from '../src/utils/templates.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE_TEMPLATES_DIR = path.join(__dirname, 'fixtures', 'templates');
@@ -35,11 +35,12 @@ describe('list command', () => {
     await list(FIXTURE_TEMPLATES_DIR);
     const text = output();
 
-    expect(text).toContain('basic');
-    expect(text).toContain('token');
-    expect(text).toContain('escrow');
+    for (const name of VALID_TEMPLATES) {
+      expect(text).toContain(name);
+    }
     expect(text).toContain('SEP-41 fungible token');
     expect(text).toContain('Milestone-based escrow');
+    expect(text).toContain('Non-fungible token');
   });
 
   it('reports the test count counted from each template', async () => {
@@ -87,13 +88,16 @@ describe('discoverTemplates', () => {
     expect(byName.basic.testCount).toBe(2);
     expect(byName.token.testCount).toBe(3);
     expect(byName.escrow.testCount).toBe(1);
+    expect(byName.nft.testCount).toBe(4);
     expect(byName.basic.available).toBe(true);
   });
 
   it('marks templates unavailable when the directory does not exist', async () => {
     const templates = await discoverTemplates('/nonexistent/templates/path');
 
-    expect(templates).toHaveLength(3);
+    // Derived rather than hardcoded so adding a template does not silently
+    // leave this assertion checking a stale number.
+    expect(templates).toHaveLength(VALID_TEMPLATES.length);
     for (const template of templates) {
       expect(template.available).toBe(false);
       expect(template.testCount).toBeNull();

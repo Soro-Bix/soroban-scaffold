@@ -4,13 +4,14 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export const VALID_TEMPLATES = ['basic', 'token', 'escrow'] as const;
+export const VALID_TEMPLATES = ['basic', 'token', 'escrow', 'nft'] as const;
 export type TemplateName = (typeof VALID_TEMPLATES)[number];
 
 export const TEMPLATE_DESCRIPTIONS: Record<TemplateName, string> = {
   basic: 'Counter contract — ideal for learning Soroban fundamentals',
   token: 'SEP-41 fungible token with mint/burn/transfer/approve',
   escrow: 'Milestone-based escrow with dispute resolution',
+  nft: 'Non-fungible token with per-token metadata and approvals',
 };
 
 const DEFAULT_TEMPLATES_DIR = path.join(

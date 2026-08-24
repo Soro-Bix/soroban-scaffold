@@ -62,6 +62,14 @@ describe('init command', () => {
     expect(libRs).toContain('pub struct my-escrowEscrowContract');
   });
 
+  it('creates a project directory from the nft template', async () => {
+    await init('my-nft', 'Test Author', 'nft', FIXTURE_TEMPLATES_DIR);
+
+    const projectDir = path.join(tmpDir, 'my-nft');
+    const libRs = await fs.readFile(path.join(projectDir, 'src', 'lib.rs'), 'utf-8');
+    expect(libRs).toContain('pub struct my-nftNftContract');
+  });
+
   it('rejects an invalid template name with a clear error', async () => {
     await expect(
       init('my-project', 'Test Author', 'nonexistent', FIXTURE_TEMPLATES_DIR)

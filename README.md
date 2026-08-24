@@ -13,7 +13,7 @@ Every Soroban developer today manually assembles the same boilerplate:
 - Test file with mock environment setup
 - README and CONTRIBUTING docs
 
-Sorobix eliminates all of that. One command, three template types, everything pre-configured and pre-tested.
+Sorobix eliminates all of that. One command, four template types, everything pre-configured and pre-tested.
 
 ## Quick Start
 
@@ -36,6 +36,7 @@ cargo test --locked
 | `basic` | Counter contract — ideal for learning Soroban | 7 |
 | `token` | SEP-41 fungible token with mint/burn/transfer/approve | 9 |
 | `escrow` | Milestone-based escrow with dispute resolution | 7 |
+| `nft` | Non-fungible token with per-token metadata and approvals | 13 |
 
 Full command reference, per-template walkthroughs and troubleshooting live in
 the [CLI usage guide](./docs/USAGE.md).
@@ -43,7 +44,7 @@ the [CLI usage guide](./docs/USAGE.md).
 ## Commands
 
 ```bash
-sorobix init <project-name> [--template basic|token|escrow] [--author <name>]
+sorobix init <project-name> [--template basic|token|escrow|nft] [--author <name>]
 sorobix list
 sorobix --version
 sorobix --help
@@ -58,6 +59,7 @@ Omit `--template` on an interactive terminal and Sorobix presents a selector:
 ❯ basic
   token
   escrow
+  nft
 
 Counter contract — ideal for learning Soroban fundamentals
 ↑↓ navigate • ⏎ select
@@ -101,7 +103,7 @@ what the templates actually contain.
 - Handlebars (template variable rendering)
 - Chalk + Ora (terminal UX)
 - Inquirer (interactive prompts)
-- Jest (35 unit tests, plus 3 integration tests that build real contracts)
+- Jest (36 unit tests, plus 4 integration tests that build real contracts)
 - GitHub Actions CI (Node 20/22 matrix)
 
 ## Testing

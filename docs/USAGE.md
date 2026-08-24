@@ -50,7 +50,7 @@ and generates a complete Soroban contract project inside it.
 Options:
   -a, --author <author>  Author name (defaults to git config user.name)
   -t, --template <name>  Contract template to scaffold (prompts if omitted)
-                         (choices: "basic", "token", "escrow")
+                         (choices: "basic", "token", "escrow", "nft")
   -h, --help             display help for command
 ```
 
@@ -64,6 +64,7 @@ Sorobix shows a selector:
 ❯ basic
   token
   escrow
+  nft
 
 Counter contract — ideal for learning Soroban fundamentals
 ↑↓ navigate • ⏎ select
@@ -76,9 +77,9 @@ context (CI, piped input, a script) the selector is skipped automatically and
 An invalid name is rejected before any files are written:
 
 ```
-$ sorobix init my-contract --template nft
-error: option '-t, --template <name>' argument 'nft' is invalid.
-Allowed choices are basic, token, escrow.
+$ sorobix init my-contract --template solana
+error: option '-t, --template <name>' argument 'solana' is invalid.
+Allowed choices are basic, token, escrow, nft.
 ```
 
 **`--author <name>`**
@@ -117,6 +118,7 @@ Available templates:
   basic    Counter contract — ideal for learning Soroban fundamentals  7 tests
   token    SEP-41 fungible token with mint/burn/transfer/approve  9 tests
   escrow   Milestone-based escrow with dispute resolution  7 tests
+  nft      Non-fungible token with per-token metadata and approvals  13 tests
 
 Templates directory: /path/to/soroban-scaffold-templates/templates
 Usage: sorobix init <project-name> --template <name>
@@ -204,6 +206,31 @@ Funds move through real cross-contract token transfers via
 between `fund()` and release. The test suite deploys a genuine Stellar Asset
 Contract rather than mocking the token.
 
+### nft — non-fungible token
+
+An NFT collection with per-token ownership, metadata URIs, and approvals for
+delegated transfers.
+
+```bash
+sorobix init my-nft --template nft
+cd my-nft
+cargo test --locked
+```
+
+Expected result: **13 tests passing**.
+
+Functions: `initialize(admin, name, symbol)`,
+`mint(admin, to, token_id, metadata_uri)`, `transfer(from, to, token_id)`,
+`approve(owner, spender, token_id)`,
+`transfer_from(spender, from, to, token_id)`, `burn(owner, token_id)`,
+`owner_of(token_id)`, `token_uri(token_id)`, `get_approved(token_id)`,
+`balance_of(owner)`, `total_supply()`, `name()`, `symbol()`.
+
+Token IDs are `u64` and must be unique — minting an existing ID fails with
+`TokenAlreadyExists` rather than silently reassigning ownership. Approvals are
+cleared on every ownership change, so a spender approved by a previous owner
+cannot move the token again after it changes hands.
+
 ## What gets generated
 
 Every template produces the same file layout:
@@ -229,7 +256,7 @@ what makes a freshly generated project work on the first try.
 
 | Variable | Description | Default |
 |---|---|---|
-| `SOROBIX_TEMPLATES_DIR` | Directory containing `basic/`, `token/` and `escrow/` template subdirectories | `../soroban-scaffold-templates/templates`, relative to the CLI install |
+| `SOROBIX_TEMPLATES_DIR` | Directory containing `basic/`, `token/`, `escrow/` and `nft/` template subdirectories | `../soroban-scaffold-templates/templates`, relative to the CLI install |
 
 Useful for developing templates locally:
 
