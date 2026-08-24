@@ -37,6 +37,9 @@ cargo test --locked
 | `token` | SEP-41 fungible token with mint/burn/transfer/approve | 9 |
 | `escrow` | Milestone-based escrow with dispute resolution | 7 |
 
+Full command reference, per-template walkthroughs and troubleshooting live in
+the [CLI usage guide](./docs/USAGE.md).
+
 ## Commands
 
 ```bash

@@ -124,15 +124,43 @@ ci: add tsc --noEmit to build pipeline
 soroban-scaffold/
 ├── src/
 │   ├── index.ts           # CLI entry point, commander setup
-│   └── commands/
-│       └── init.ts        # `sorobix init` command implementation
-├── jest.config.ts         # Jest configuration
+│   ├── commands/
+│   │   ├── init.ts        # `sorobix init` command implementation
+│   │   └── list.ts        # `sorobix list` command implementation
+│   └── utils/
+│       ├── author.ts      # author resolution (flag / git config / prompt)
+│       ├── files.ts       # project directory creation and template copying
+│       ├── prompt.ts      # TTY detection and the template selector
+│       ├── template.ts    # Handlebars variable rendering
+│       └── templates.ts   # template discovery, descriptions, test counts
+├── tests/
+│   ├── *.test.ts          # unit tests
+│   ├── fixtures/          # miniature templates used by unit tests
+│   └── integration/       # scaffolds real projects and runs cargo test
+├── docs/
+│   └── USAGE.md           # full CLI usage guide
+├── jest.config.js             # unit test configuration
+├── jest.integration.config.js # integration test configuration
 ├── tsconfig.json          # TypeScript configuration
 ├── package.json
 ├── README.md
 ├── CONTRIBUTING.md
 └── context.md             # Session-by-session project context
 ```
+
+## Running the tests
+
+```bash
+npm test                 # unit tests — fast, no Rust toolchain needed
+npm run test:integration # scaffolds each template and runs cargo test on it
+npm run test:all         # both
+```
+
+The integration suite compiles real Soroban contracts, so it takes several
+minutes and requires Rust plus a checkout of
+[soroban-scaffold-templates](https://github.com/Soro-Bix/soroban-scaffold-templates).
+It skips itself when either is unavailable. CI runs the unit suite on every
+pull request and the integration suite on merges to `main`.
 
 ## Questions?
 
