@@ -18,12 +18,13 @@ program
   .command('init <project-name>')
   .description('Create a new Soroban smart contract project')
   .option('-a, --author <author>', 'Author name (defaults to git config user.name)')
+  // No commander default: an absent --template must stay distinguishable from
+  // an explicit "--template basic" so the selector knows whether to prompt.
   .addOption(
-    new Option('-t, --template <name>', 'Contract template to scaffold')
+    new Option('-t, --template <name>', 'Contract template to scaffold (prompts if omitted)')
       .choices(VALID_TEMPLATES)
-      .default('basic')
   )
-  .action(async (projectName: string, options: { author?: string; template: string }) => {
+  .action(async (projectName: string, options: { author?: string; template?: string }) => {
     console.log(
       chalk.cyan(
         figlet.textSync('Sorobix', { horizontalLayout: 'full' })

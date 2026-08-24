@@ -46,6 +46,24 @@ sorobix --version
 sorobix --help
 ```
 
+### Template selection
+
+Omit `--template` on an interactive terminal and Sorobix presents a selector:
+
+```
+? Which contract template would you like to use?
+❯ basic
+  token
+  escrow
+
+Counter contract — ideal for learning Soroban fundamentals
+↑↓ navigate • ⏎ select
+```
+
+Passing `--template <name>` skips the selector entirely, which is what CI and
+scripted runs should do. In any non-TTY context the selector is skipped
+automatically and `basic` is used.
+
 ### Author resolution
 
 The `{{AUTHOR}}` field in generated projects is resolved in this order:
@@ -80,7 +98,7 @@ what the templates actually contain.
 - Handlebars (template variable rendering)
 - Chalk + Ora (terminal UX)
 - Inquirer (interactive prompts)
-- Jest (test suite — 26 passing tests)
+- Jest (test suite — 35 passing tests)
 - GitHub Actions CI (Node 20/22 matrix)
 
 ## Contributing

@@ -1,5 +1,6 @@
 import { execSync } from 'node:child_process';
 import input from '@inquirer/input';
+import { isInteractive } from './prompt.js';
 
 export const FALLBACK_AUTHOR = 'Unknown';
 
@@ -19,10 +20,6 @@ export function readGitAuthor(env: NodeJS.ProcessEnv = process.env): string | nu
     // git not installed, or no user.name configured
     return null;
   }
-}
-
-function isInteractive(): boolean {
-  return Boolean(process.stdin.isTTY && process.stdout.isTTY);
 }
 
 async function promptForAuthor(): Promise<string> {

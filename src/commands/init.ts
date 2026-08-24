@@ -4,17 +4,20 @@ import fs from 'fs-extra';
 import ora, { type Ora } from 'ora';
 import { resolveAuthor } from '../utils/author.js';
 import { copyTemplate, createProjectDir } from '../utils/files.js';
+import { resolveTemplate } from '../utils/prompt.js';
 import { isValidTemplate, resolveTemplatesDir, VALID_TEMPLATES } from '../utils/templates.js';
 
 export async function init(
   projectName: string,
   authorOption?: string,
-  template: string = 'basic',
+  templateOption?: string,
   templatesDir: string = resolveTemplatesDir()
 ): Promise<void> {
   let spinner: Ora | undefined;
 
   try {
+    const template = await resolveTemplate(templateOption);
+
     // Validated before resolving the author: prompting someone for their name
     // and then failing on an unknown template wastes the answer.
     if (!isValidTemplate(template)) {
