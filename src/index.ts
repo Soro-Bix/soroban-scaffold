@@ -3,7 +3,9 @@
 import { Command, Option } from 'commander';
 import chalk from 'chalk';
 import figlet from 'figlet';
-import { init, VALID_TEMPLATES } from './commands/init.js';
+import { init } from './commands/init.js';
+import { list } from './commands/list.js';
+import { VALID_TEMPLATES } from './utils/templates.js';
 
 const program = new Command();
 
@@ -33,6 +35,18 @@ program
     try {
       await init(projectName, options.author, options.template);
     } catch {
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command('list')
+  .description('List the available contract templates')
+  .action(async () => {
+    try {
+      await list();
+    } catch (error) {
+      console.error(chalk.red(error instanceof Error ? error.message : String(error)));
       process.exitCode = 1;
     }
   });

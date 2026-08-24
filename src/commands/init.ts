@@ -1,29 +1,10 @@
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import ora from 'ora';
 import { copyTemplate, createProjectDir } from '../utils/files.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-export const VALID_TEMPLATES = ['basic', 'token', 'escrow'] as const;
-export type TemplateName = (typeof VALID_TEMPLATES)[number];
-
-function isValidTemplate(value: string): value is TemplateName {
-  return (VALID_TEMPLATES as readonly string[]).includes(value);
-}
-
-const DEFAULT_TEMPLATES_DIR = path.join(
-  __dirname,
-  '../../../soroban-scaffold-templates/templates'
-);
-
-function resolveTemplatesDir(): string {
-  const override = process.env.SOROBIX_TEMPLATES_DIR;
-  return override && override.trim() ? override.trim() : DEFAULT_TEMPLATES_DIR;
-}
+import { isValidTemplate, resolveTemplatesDir, VALID_TEMPLATES } from '../utils/templates.js';
 
 function resolveAuthor(authorOption?: string): string {
   if (authorOption && authorOption.trim()) {

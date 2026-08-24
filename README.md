@@ -41,9 +41,14 @@ cargo test --locked
 
 ```bash
 sorobix init <project-name> [--template basic|token|escrow]
+sorobix list
 sorobix --version
 sorobix --help
 ```
+
+`sorobix list` shows each available template with its description and test count.
+Test counts are read from the template sources at runtime, so they always reflect
+what the templates actually contain.
 
 ## Environment Variables
 
@@ -62,7 +67,7 @@ sorobix --help
 - TypeScript + Commander (CLI framework)
 - Handlebars (template variable rendering)
 - Chalk + Ora (terminal UX)
-- Jest (test suite — 10 passing tests)
+- Jest (test suite — 17 passing tests)
 - GitHub Actions CI (Node 20/22 matrix)
 
 ## Contributing
