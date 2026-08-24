@@ -40,11 +40,23 @@ cargo test --locked
 ## Commands
 
 ```bash
-sorobix init <project-name> [--template basic|token|escrow]
+sorobix init <project-name> [--template basic|token|escrow] [--author <name>]
 sorobix list
 sorobix --version
 sorobix --help
 ```
+
+### Author resolution
+
+The `{{AUTHOR}}` field in generated projects is resolved in this order:
+
+1. `--author "Your Name"` if provided
+2. `git config user.name`
+3. An interactive prompt, if git has no identity configured
+
+The prompt only appears on an interactive terminal. In CI or any piped/
+non-TTY context it is skipped and a placeholder is used instead, so a
+scaffold run can never hang waiting for input that will not arrive.
 
 `sorobix list` shows each available template with its description and test count.
 Test counts are read from the template sources at runtime, so they always reflect
@@ -67,7 +79,8 @@ what the templates actually contain.
 - TypeScript + Commander (CLI framework)
 - Handlebars (template variable rendering)
 - Chalk + Ora (terminal UX)
-- Jest (test suite — 17 passing tests)
+- Inquirer (interactive prompts)
+- Jest (test suite — 26 passing tests)
 - GitHub Actions CI (Node 20/22 matrix)
 
 ## Contributing

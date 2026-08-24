@@ -1,27 +1,10 @@
 import path from 'node:path';
-import { execSync } from 'node:child_process';
 import chalk from 'chalk';
 import fs from 'fs-extra';
-import ora from 'ora';
+import ora, { type Ora } from 'ora';
+import { resolveAuthor } from '../utils/author.js';
 import { copyTemplate, createProjectDir } from '../utils/files.js';
 import { isValidTemplate, resolveTemplatesDir, VALID_TEMPLATES } from '../utils/templates.js';
-
-function resolveAuthor(authorOption?: string): string {
-  if (authorOption && authorOption.trim()) {
-    return authorOption.trim();
-  }
-
-  try {
-    const gitAuthor = execSync('git config user.name', { encoding: 'utf-8' }).trim();
-    if (gitAuthor) {
-      return gitAuthor;
-    }
-  } catch {
-    // git not installed, or no user.name configured — fall through to default
-  }
-
-  return 'Unknown';
-}
 
 export async function init(
   projectName: string,
@@ -29,10 +12,11 @@ export async function init(
   template: string = 'basic',
   templatesDir: string = resolveTemplatesDir()
 ): Promise<void> {
-  const author = resolveAuthor(authorOption);
-  const spinner = ora(`Initializing ${template} project: ${projectName}`).start();
+  let spinner: Ora | undefined;
 
   try {
+    // Validated before resolving the author: prompting someone for their name
+    // and then failing on an unknown template wastes the answer.
     if (!isValidTemplate(template)) {
       throw new Error(
         `Invalid template "${template}". Valid options are: ${VALID_TEMPLATES.join(', ')}`
@@ -47,6 +31,12 @@ export async function init(
       );
     }
 
+    // Resolved before the spinner starts, so an interactive prompt is not
+    // rendered underneath a spinning frame.
+    const author = await resolveAuthor(authorOption);
+
+    spinner = ora(`Initializing ${template} project: ${projectName}`).start();
+
     const destDir = createProjectDir(projectName);
     await copyTemplate(templateDir, destDir, { projectName, author });
 
@@ -56,7 +46,7 @@ export async function init(
     console.log(chalk.cyan('  cargo build'));
     console.log(chalk.cyan('  cargo test'));
   } catch (error) {
-    spinner.fail(chalk.red('Failed to create project.'));
+    spinner?.fail(chalk.red('Failed to create project.'));
     console.error(chalk.red(error instanceof Error ? error.message : String(error)));
     throw error;
   }
