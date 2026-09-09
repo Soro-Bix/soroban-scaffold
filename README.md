@@ -120,6 +120,13 @@ project — so a template that stops compiling fails the build. It skips
 automatically when Rust or the templates directory is unavailable, and runs in
 CI on merges to `main`.
 
+## Roadmap
+
+Sorobix is under active development. [ROADMAP.md](./ROADMAP.md) lays out the
+milestones through November 2026 — npm publication, a clean-machine install
+proof, testnet deployment of every template, three new contract templates, and
+a `sorobix upgrade` command — with the acceptance criteria each has to meet.
+
 ## Contributing
 
 We welcome contributors of all experience levels. See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup instructions and contribution guidelines.
