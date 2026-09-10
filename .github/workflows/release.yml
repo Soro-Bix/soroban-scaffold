@@ -1,0 +1,124 @@
+name: Release
+
+# Publishing happens from a tag, never from a laptop: the tarball that reaches
+# npm is then built from a known commit by a job anyone can read, and npm
+# provenance attests to that.
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write   # create the GitHub release
+      id-token: write   # npm provenance attestation
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out the templates repository
+        uses: actions/checkout@v4
+        with:
+          repository: Soro-Bix/soroban-scaffold-templates
+          path: soroban-scaffold-templates
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci
+
+      # An npm version cannot be republished, so a tag that disagrees with
+      # package.json has to stop here rather than put the wrong number on the
+      # registry permanently.
+      - name: Tag must match package.json
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          echo "tag=$tag package.json=$pkg"
+          if [[ "$tag" != "$pkg" ]]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match package.json version $pkg"
+            exit 1
+          fi
+
+      - name: Refuse to republish an existing version
+        run: |
+          set -euo pipefail
+          pkg="$(node -p "require('./package.json').version")"
+          if npm view "@soro-bix/scaffold@$pkg" version >/dev/null 2>&1; then
+            echo "::error::@soro-bix/scaffold@$pkg is already published"
+            exit 1
+          fi
+          echo "version $pkg is unpublished, continuing"
+
+      - run: npm test
+        env:
+          NODE_OPTIONS: --experimental-vm-modules
+
+      # prepack builds and syncs templates in. The source must be passed
+      # explicitly because the checkout above is inside the workspace rather
+      # than beside it.
+      - name: Build the tarball
+        run: npm pack --pack-destination "$RUNNER_TEMP"
+        env:
+          SOROBIX_TEMPLATES_SOURCE: ${{ github.workspace }}/soroban-scaffold-templates/templates
+
+      # The same check the package CI job runs, repeated here against the exact
+      # artifact about to be published rather than a rebuild of it.
+      - name: Verify the tarball scaffolds before publishing
+        run: |
+          set -euo pipefail
+          npm install -g --prefix "$RUNNER_TEMP/pre" "$RUNNER_TEMP"/soro-bix-scaffold-*.tgz
+          cd "$RUNNER_TEMP"
+          unset SOROBIX_TEMPLATES_DIR
+          output="$("$RUNNER_TEMP/pre/bin/sorobix" list)"
+          echo "$output"
+          if grep -q 'not found' <<< "$output"; then
+            echo "::error::templates missing from the tarball — refusing to publish"
+            exit 1
+          fi
+          mkdir -p precheck && cd precheck
+          "$RUNNER_TEMP/pre/bin/sorobix" init smoke --template token --author "CI"
+          test -f smoke/src/lib.rs
+
+      - name: Publish to npm
+        run: npm publish "$RUNNER_TEMP"/soro-bix-scaffold-*.tgz --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Proves the artifact on the registry works, not just the one built here.
+      - name: Smoke test the published package
+        run: |
+          set -euo pipefail
+          pkg="$(node -p "require('./package.json').version")"
+          cd "$RUNNER_TEMP"
+          unset SOROBIX_TEMPLATES_DIR
+
+          # The registry takes a moment to serve a version it has just accepted.
+          for attempt in 1 2 3 4 5 6; do
+            if npm view "@soro-bix/scaffold@$pkg" version >/dev/null 2>&1; then
+              break
+            fi
+            echo "waiting for $pkg to appear on the registry (attempt $attempt)"
+            sleep 10
+          done
+
+          npm install -g --prefix "$RUNNER_TEMP/post" "@soro-bix/scaffold@$pkg"
+          mkdir -p published && cd published
+          "$RUNNER_TEMP/post/bin/sorobix" init from-registry --template basic --author "CI"
+          test -f from-registry/src/lib.rs
+          echo "published package scaffolds correctly"
+
+      - name: Create the GitHub release
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes \
+            "$RUNNER_TEMP"/soro-bix-scaffold-*.tgz
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -192,6 +192,27 @@ If you change either the resolution order or the sync script, the `package` CI
 job is the one that checks your work: it builds the tarball, installs it, and
 scaffolds from it with `SOROBIX_TEMPLATES_DIR` unset and no checkout in reach.
 
+## Releasing
+
+Releases are published by `.github/workflows/release.yml`, triggered by a
+version tag. Nothing is published from a laptop, so the artifact on npm is
+always built from a commit anyone can inspect, with npm provenance attesting
+to it.
+
+```bash
+npm version patch   # or minor / major — commits and tags
+git push origin main --follow-tags
+```
+
+The workflow refuses to publish if the tag disagrees with `package.json`, if
+that version is already on the registry, if the unit suite fails, or if the
+tarball it built cannot scaffold a project. After publishing it installs the
+package from the registry and scaffolds with it, so a broken release fails
+loudly rather than sitting there.
+
+Publishing requires an `NPM_TOKEN` repository secret — an npm automation token
+with publish rights on the `@soro-bix` scope.
+
 ## Questions?
 
 Open a GitHub discussion or reach out to the maintainers.
