@@ -30,7 +30,8 @@ export async function init(
     if (!(await fs.pathExists(templateDir))) {
       throw new Error(
         `Template "${template}" not found at ${templateDir}. ` +
-          'Set SOROBIX_TEMPLATES_DIR to point at a directory containing basic/, token/, and escrow/ subdirectories.'
+          'Set SOROBIX_TEMPLATES_DIR to point at a directory containing ' +
+          `${VALID_TEMPLATES.map((name) => `${name}/`).join(', ')} subdirectories.`
       );
     }
 

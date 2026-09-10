@@ -3,3 +3,5 @@ dist/
 .env
 *.log
 coverage/
+templates/
+*.tgz

@@ -139,6 +139,9 @@ soroban-scaffold/
 │   └── integration/       # scaffolds real projects and runs cargo test
 ├── docs/
 │   └── USAGE.md           # full CLI usage guide
+├── scripts/
+│   └── sync-templates.sh  # copies templates into the package for publishing
+├── templates/             # gitignored; the synced copy that ships to npm
 ├── jest.config.js             # unit test configuration
 ├── jest.integration.config.js # integration test configuration
 ├── tsconfig.json          # TypeScript configuration
@@ -161,6 +164,33 @@ minutes and requires Rust plus a checkout of
 [soroban-scaffold-templates](https://github.com/Soro-Bix/soroban-scaffold-templates).
 It skips itself when either is unavailable. CI runs the unit suite on every
 pull request and the integration suite on merges to `main`.
+
+## How templates reach the CLI
+
+`resolveTemplatesDir()` looks in three places, in order:
+
+1. `SOROBIX_TEMPLATES_DIR`, if set
+2. `templates/` inside this package — the copy that ships to npm
+3. `../soroban-scaffold-templates/templates` — a sibling clone
+
+Cloning both repositories side by side is enough for development; case 3 covers
+it and nothing needs syncing.
+
+Case 2 is what makes the published package work. `scripts/sync-templates.sh`
+copies the templates in, and `prepack` runs it so `npm pack` and `npm publish`
+cannot produce a tarball without them:
+
+```bash
+npm run sync-templates                                  # from a sibling clone
+SOROBIX_TEMPLATES_SOURCE=/path/to/templates npm run sync-templates
+```
+
+The synced `templates/` directory is gitignored — the templates repository
+stays the single source of truth, and this copy is a build artifact.
+
+If you change either the resolution order or the sync script, the `package` CI
+job is the one that checks your work: it builds the tarball, installs it, and
+scaffolds from it with `SOROBIX_TEMPLATES_DIR` unset and no checkout in reach.
 
 ## Questions?
 

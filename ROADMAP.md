@@ -10,25 +10,26 @@ when work starts.
 
 ## Where things stand
 
-As of 2026-09-09:
+As of 2026-09-10:
 
 | | |
 |---|---|
 | Templates | 4 (`basic`, `token`, `escrow`, `nft`) — 36 contract tests total |
 | CLI tests | 36 unit, 4 integration (each builds a real contract) |
 | CI | Green on both repos — Node 20/22 matrix here, 4-way template matrix there |
-| Published to npm | **Not yet** — see Milestone 1 |
+| Templates bundled in the package | Yes — enforced by the `package` CI job |
+| Published to npm | **Not yet** — see Milestone 2 |
 | Deployed to testnet | **Not yet** — see Milestone 3 |
 
-The two "not yet" rows are the gap between what Sorobix claims and what a new
-user can actually verify. They come first for that reason.
+The "not yet" rows are the gap between what Sorobix claims and what a new user
+can actually verify. They come first for that reason.
 
 ## Milestones
 
 | # | Milestone | Target | Tracking |
 |---|---|---|---|
-| 1 | [Publish to npm](#1-publish-to-npm) | Sep 9–15 | [scaffold#7](https://github.com/Soro-Bix/soroban-scaffold/issues/7) |
-| 2 | [Clean-machine install proof](#2-clean-machine-install-proof) | Sep 16–22 | new |
+| 1 | [Bundle templates into the package](#1-bundle-templates-into-the-package) | Sep 10 — **done** | new |
+| 2 | [Publish to npm](#2-publish-to-npm) | Sep 10–22 | [scaffold#7](https://github.com/Soro-Bix/soroban-scaffold/issues/7) |
 | 3 | [Testnet deployment proof](#3-testnet-deployment-proof) | Sep 23–29 | new |
 | 4 | [Multisig template](#4-multisig-template) | Sep 30–Oct 6 | [templates#3](https://github.com/Soro-Bix/soroban-scaffold-templates/issues/3) |
 | 5 | [Timelock template](#5-timelock-template) | Oct 7–13 | [templates#4](https://github.com/Soro-Bix/soroban-scaffold-templates/issues/4) |
@@ -38,43 +39,45 @@ user can actually verify. They come first for that reason.
 
 ---
 
-### 1. Publish to npm
+### 1. Bundle templates into the package
+
+**Done — 2026-09-10.**
+
+Ordered ahead of publishing after the first tarball was built and tested:
+it installed cleanly and then failed on every `sorobix init`, because
+`resolveTemplatesDir()` resolved to a sibling checkout of the templates
+repository that does not exist inside `node_modules`. npm versions are
+immutable, so publishing that would have left a permanently broken `0.1.0` on
+the registry.
+
+Templates are now copied into the package by `scripts/sync-templates.sh` on
+`prepack`, and `resolveTemplatesDir()` prefers that bundled copy. The
+`SOROBIX_TEMPLATES_DIR` override and the sibling-checkout fallback both still
+work, so development from a clone is unchanged.
+
+**Done when:** ✅ all of the following
+
+- `npm pack` produces a tarball containing every template — 24 files, 0 from
+  `src/` or `tests/`
+- The tarball installs globally and `sorobix list` reports all four templates
+  found, with `SOROBIX_TEMPLATES_DIR` unset and no repo checkout reachable
+- A project scaffolded from the installed package passes `cargo test --locked`
+- A `package` CI job runs the whole sequence on every push, so it cannot rot
+
+### 2. Publish to npm
 
 The README's Quick Start opens with `npm install -g @soro-bix/scaffold`, and
-that command currently fails with a 404. Nothing else on this roadmap matters
-as much as closing that gap, because it is the first thing anyone evaluating
-the tool will run.
+that command currently 404s. This is the last step between the documented
+install and a working one.
 
-Scope: `.npmignore` (or an explicit `files` allowlist), populated `author` and
-`repository` fields, a `prepublishOnly` build hook, and a GitHub Actions
-workflow that publishes on a version tag rather than from a laptop.
+Remaining scope: a release workflow that publishes on a version tag rather than
+from a laptop, and the `NPM_TOKEN` secret to go with it.
 
 **Done when:**
-- `npm pack --dry-run` lists `dist/` and the docs, and excludes `src/`,
-  `tests/`, `node_modules/` and `context.md`
 - `npm view @soro-bix/scaffold version` returns `0.1.0`
 - A `v0.1.0` tag exists and the release workflow published it
-- `npm install -g @soro-bix/scaffold && sorobix --version` works off a clean
-  npm cache
-
-### 2. Clean-machine install proof
-
-Publishing is not the same as working. Everything to date has been verified
-against a repo checkout with a sibling templates directory on disk — a globally
-installed package has neither.
-
-This milestone runs the real thing end to end in a container with no Rust
-toolchain preinstalled, no repo checkout, and no `SOROBIX_TEMPLATES_DIR` set,
-then fixes whatever that surfaces. The likely finding is that templates need to
-ship inside the npm package rather than being resolved from a sibling path.
-
-**Done when:**
-- A documented container run installs from npm, scaffolds each of the four
-  templates, and passes `cargo test --locked` in each — with no repo checkout
-  present
-- Whatever template-resolution change that requires is implemented and unit
-  tested
-- The run is automated as a scheduled CI job so it cannot silently rot
+- `npm install -g @soro-bix/scaffold && sorobix init demo --template token`
+  works off a clean npm cache, and the result passes `cargo test --locked`
 
 ### 3. Testnet deployment proof
 

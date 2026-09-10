@@ -89,7 +89,7 @@ what the templates actually contain.
 
 | Variable | Description | Default |
 |---|---|---|
-| `SOROBIX_TEMPLATES_DIR` | Override the default template directory path | `../soroban-scaffold-templates/templates` |
+| `SOROBIX_TEMPLATES_DIR` | Override where templates are read from | The `templates/` directory bundled in the package, falling back to a sibling `../soroban-scaffold-templates/templates` checkout |
 
 ## Requirements
 

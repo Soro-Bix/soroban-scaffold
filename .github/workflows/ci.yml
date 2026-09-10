@@ -63,3 +63,94 @@ jobs:
         env:
           NODE_OPTIONS: --experimental-vm-modules
           SOROBIX_TEMPLATES_DIR: ${{ github.workspace }}/soroban-scaffold-templates/templates
+
+  # Proves the published tarball actually works. Everything above runs against
+  # a repo checkout with the templates repository beside it; an installed
+  # package has neither, which is exactly how the first tarball built from this
+  # package came to install cleanly and then fail on every `sorobix init`.
+  #
+  # The install and scaffold steps deliberately run from a directory outside
+  # the workspace with SOROBIX_TEMPLATES_DIR unset, so nothing can be resolved
+  # from the checkout and the bundled templates are the only ones reachable.
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out the templates repository
+        uses: actions/checkout@v4
+        with:
+          repository: Soro-Bix/soroban-scaffold-templates
+          path: soroban-scaffold-templates
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - run: npm ci
+
+      # prepack builds and runs sync-templates.sh. The source has to be passed
+      # explicitly: the script's default is a sibling of the repo root, and the
+      # checkout above puts the templates inside the workspace instead.
+      - name: Build the tarball
+        run: npm pack --pack-destination "$RUNNER_TEMP"
+        env:
+          SOROBIX_TEMPLATES_SOURCE: ${{ github.workspace }}/soroban-scaffold-templates/templates
+
+      - name: Assert templates are in the tarball
+        run: |
+          set -euo pipefail
+          count="$(tar -tzf "$RUNNER_TEMP"/soro-bix-scaffold-*.tgz \
+            | grep -c '^package/templates/')"
+          echo "template files in tarball: $count"
+          if [[ "$count" -eq 0 ]]; then
+            echo "::error::tarball contains no templates"
+            exit 1
+          fi
+
+      - name: Install the tarball globally
+        run: npm install -g --prefix "$RUNNER_TEMP/npm-global" "$RUNNER_TEMP"/soro-bix-scaffold-*.tgz
+
+      - name: Every template resolves from the installed package
+        working-directory: ${{ runner.temp }}
+        run: |
+          set -euo pipefail
+          unset SOROBIX_TEMPLATES_DIR
+          output="$("$RUNNER_TEMP/npm-global/bin/sorobix" list)"
+          echo "$output"
+          if grep -q 'not found' <<< "$output"; then
+            echo "::error::a template could not be resolved from the installed package"
+            exit 1
+          fi
+
+      - name: Scaffold every template from the installed package
+        working-directory: ${{ runner.temp }}
+        run: |
+          set -euo pipefail
+          unset SOROBIX_TEMPLATES_DIR
+          mkdir -p scaffolded && cd scaffolded
+          # Driven by what actually shipped rather than a list repeated here,
+          # so a template added later is covered without editing this job.
+          installed="$RUNNER_TEMP/npm-global/lib/node_modules/@soro-bix/scaffold/templates"
+          for template in $(ls "$installed"); do
+            "$RUNNER_TEMP/npm-global/bin/sorobix" init "demo-$template" \
+              --template "$template" --author "CI"
+            test -f "demo-$template/src/lib.rs"
+            test -f "demo-$template/Cargo.lock"
+          done
+
+      - uses: dtolnay/rust-toolchain@stable
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+      - uses: Swatinem/rust-cache@v2
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+      # One template is enough here. The integration job already compiles all
+      # four; what this proves is that the copies inside the tarball are real
+      # contracts rather than empty directories that happened to be created.
+      - name: Compile a scaffolded project
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        working-directory: ${{ runner.temp }}/scaffolded/demo-token
+        run: cargo test --locked

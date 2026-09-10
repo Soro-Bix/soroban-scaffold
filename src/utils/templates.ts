@@ -14,9 +14,20 @@ export const TEMPLATE_DESCRIPTIONS: Record<TemplateName, string> = {
   nft: 'Non-fungible token with per-token metadata and approvals',
 };
 
-const DEFAULT_TEMPLATES_DIR = path.join(
-  __dirname,
-  '../../../soroban-scaffold-templates/templates'
+// dist/utils/templates.js -> the package root.
+const PACKAGE_ROOT = path.join(__dirname, '../..');
+
+// Copied in by scripts/sync-templates.sh via the "prepack" hook, so the
+// templates travel inside the npm tarball. For anyone who installed sorobix
+// from npm this is the only path that exists — there is no sibling checkout
+// next to node_modules.
+export const BUNDLED_TEMPLATES_DIR = path.join(PACKAGE_ROOT, 'templates');
+
+// A sibling clone of the templates repository, which is the layout a
+// development checkout has before templates have been synced in.
+export const SIBLING_TEMPLATES_DIR = path.join(
+  PACKAGE_ROOT,
+  '../soroban-scaffold-templates/templates'
 );
 
 export function isValidTemplate(value: string): value is TemplateName {
@@ -25,7 +36,18 @@ export function isValidTemplate(value: string): value is TemplateName {
 
 export function resolveTemplatesDir(): string {
   const override = process.env.SOROBIX_TEMPLATES_DIR;
-  return override && override.trim() ? override.trim() : DEFAULT_TEMPLATES_DIR;
+  if (override && override.trim()) {
+    return override.trim();
+  }
+
+  // Bundled copy first. A development checkout that has run sync-templates.sh
+  // should use what it synced rather than reaching outside the package, and an
+  // installed package has nothing else to fall back to.
+  if (fs.existsSync(BUNDLED_TEMPLATES_DIR)) {
+    return BUNDLED_TEMPLATES_DIR;
+  }
+
+  return SIBLING_TEMPLATES_DIR;
 }
 
 export interface TemplateInfo {
