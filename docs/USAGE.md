@@ -38,6 +38,7 @@ Options:
 Commands:
   init [options] <project-name>  Create a new Soroban smart contract project
   list                           List the available contract templates
+  upgrade [options]              Fetch and install the latest contract templates
   help [command]                 display help for command
 ```
 
@@ -131,6 +132,45 @@ an error.
 
 Respects `SOROBIX_TEMPLATES_DIR`, so it also works against a custom template
 directory.
+
+### `sorobix upgrade`
+
+Fetches the latest templates from `Soro-Bix/soroban-scaffold-templates`, displays
+a per-template and per-file diff summary against the local cache, and prompts for
+confirmation before overwriting local templates.
+
+```
+Options:
+  -y, --yes   Overwrite local templates without prompting for confirmation
+  -h, --help  display help for command
+```
+
+When updates are available, `sorobix upgrade` shows every added, modified, and
+removed template file before asking whether to proceed:
+
+```
+$ sorobix upgrade
+
+Template changes (v0.2.0):
+
+  basic      1 modified
+  token      unchanged (6 files)
+  escrow     unchanged (6 files)
+  nft        1 added
+
+  ~ basic/src/lib.rs.template (+4 / -1 lines)
+  + nft/README.md.template (+28 lines)
+
+Target directory: /path/to/templates
+
+? Overwrite local templates in /path/to/templates?
+❯ Yes, update local templates
+  No, keep current templates
+```
+
+In non-interactive environments (such as CI), pass `--yes` (`-y`) to apply the
+update without blocking on terminal input. Respects `SOROBIX_TEMPLATES_DIR` and
+honors `GITHUB_TOKEN` when set to avoid anonymous GitHub API rate limits.
 
 ## Template walkthroughs
 

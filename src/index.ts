@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import figlet from 'figlet';
 import { init } from './commands/init.js';
 import { list } from './commands/list.js';
+import { upgrade } from './commands/upgrade.js';
 import { VALID_TEMPLATES } from './utils/templates.js';
 
 const program = new Command();
@@ -48,6 +49,18 @@ program
       await list();
     } catch (error) {
       console.error(chalk.red(error instanceof Error ? error.message : String(error)));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command('upgrade')
+  .description('Fetch and install the latest contract templates')
+  .option('-y, --yes', 'Overwrite local templates without prompting for confirmation')
+  .action(async (options: { yes?: boolean }) => {
+    try {
+      await upgrade({ yes: options.yes });
+    } catch {
       process.exitCode = 1;
     }
   });
