@@ -73,3 +73,13 @@
 - Interactive template selector (inquirer prompt when `--template` isn't specified) — currently just defaults silently to `basic`
 - GitHub issues for Drips Wave
 - Make template path configurable was the last remaining item from Session 2/3's list — now done via `SOROBIX_TEMPLATES_DIR`
+
+## Session 5 — `sorobix upgrade` Command
+
+### What was built
+- Added `sorobix upgrade` (`src/commands/upgrade.ts`, `src/utils/upgrade.ts`, `src/utils/tar.ts`) wired into `src/index.ts` with `-y, --yes` non-interactive confirmation flag
+- Fetches the latest GitHub release tarball from `Soro-Bix/soroban-scaffold-templates` (with graceful fallback to the `main` branch tarball when no GitHub Release has been published yet, plus optional `GITHUB_TOKEN` header support and clear offline/HTTP error messages)
+- Pure Node.js gzip + POSIX/USTAR/PAX/GNU-LongLink `.tar.gz` extraction (`extractTarGz`) into a temporary staging directory with path-traversal protection
+- Computes and prints a per-template and per-file line-delta diff summary (`diffTemplateTrees`) before prompting the user via `@inquirer/select` (or requiring `--yes` in non-interactive mode) prior to replacing local templates
+- Added unit test suite in `tests/upgrade.test.ts` covering diff display prior to confirmation, user cancellation, no-op up-to-date detection, `main` tarball fallback, network/rate-limit error handling, non-interactive guard, PAX long paths, and path-traversal rejection
+- Documented `sorobix upgrade` in `docs/USAGE.md`
